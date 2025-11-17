@@ -1,15 +1,14 @@
 import pandas as pd
 import yfinance as yf
-from datetime import datetime
 import logging
 import os
 
 
 # Input from team
-tickers = ["NVDA","SPY","AVGO","INTC"]
+tickers = ["NVDA","AAPL"]
 period="1d"
-interval="10m"
-parquet_file="stock_10m.parquet"
+interval="5m"
+parquet_file="wei_stock_10m_test.parquet"
 
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(message)s")
@@ -36,6 +35,7 @@ def fetch_equity(tickers,period,interval):
         name = ticker_info.get_info()["longName"] or ticker_info.get_info()["shortName"] or ticker
         data["currency"] = currency
         data["name"] = name
+        data["datetime"]=pd.Timestamp.now(tz="UTC")
 
         frames.append(data)
 
