@@ -1,22 +1,21 @@
 import streamlit as st
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
-def render_indicators(df, rsi_value, macd_value, atr_value, signal_score, bb_width):
+def render_indicators(df, rsi_value, signal_score):
     """
-    Renders technical indicators: RSI, MACD, ATR, Signal Score, and Bollinger Bands
+    Renders RSI indicator (simplified version)
 
     Args:
-        df: DataFrame with date, rsi, macd, macd_signal, macd_hist, atr
+        df: DataFrame with date and rsi
         rsi_value: Current RSI value
-        macd_value: Current MACD value
-        atr_value: Current ATR value
         signal_score: Overall signal score
-        bb_width: Bollinger Band width
     """
 
-    # Create 3 columns for indicators
-    col1, col2 = st.columns(2)
+    # Single column layout for simplified view
+    st.markdown("---")
+    st.markdown("## Technical Indicators")
+
+    col1, col2 = st.columns([2, 1])
 
     with col1:
         # RSI Chart
@@ -33,15 +32,18 @@ def render_indicators(df, rsi_value, macd_value, atr_value, signal_score, bb_wid
         ))
 
         # Add overbought/oversold lines
-        fig_rsi.add_hline(y=70, line_dash="dash", line_color="#ef4444", opacity=0.5)
-        fig_rsi.add_hline(y=30, line_dash="dash", line_color="#10b981", opacity=0.5)
+        fig_rsi.add_hline(y=70, line_dash="dash", line_color="#ef4444", opacity=0.5,
+                          annotation_text="Overbought")
+        fig_rsi.add_hline(y=30, line_dash="dash", line_color="#10b981", opacity=0.5,
+                          annotation_text="Oversold")
+        fig_rsi.add_hline(y=50, line_dash="dot", line_color="#94a3b8", opacity=0.3)
 
         fig_rsi.update_layout(
-            height=180,
+            height=300,
             plot_bgcolor='#0f172a',
             paper_bgcolor='#1e293b',
-            font=dict(color='white', size=10),
-            margin=dict(l=40, r=40, t=20, b=20),
+            font=dict(color='white', size=12),
+            margin=dict(l=50, r=50, t=30, b=30),
             showlegend=False,
             xaxis=dict(gridcolor='#1e293b', showgrid=True, color='#94a3b8'),
             yaxis=dict(gridcolor='#1e293b', showgrid=True, color='#94a3b8', range=[0, 100])
@@ -49,112 +51,46 @@ def render_indicators(df, rsi_value, macd_value, atr_value, signal_score, bb_wid
 
         st.plotly_chart(fig_rsi, use_container_width=True, config={'displayModeBar': False})
 
-        # U Inet (placeholder for custom indicator)
-        st.markdown("### U Inet")
-        st.markdown(f"<h3 style='color: white; text-align: right;'>3 MIN</h3>", unsafe_allow_html=True)
+        # RSI value display
+        rsi_color = "#ef4444" if rsi_value > 70 else "#10b981" if rsi_value < 30 else "#94a3b8"
+        rsi_status = "Overbought" if rsi_value > 70 else "Oversold" if rsi_value < 30 else "Neutral"
 
-        # ATR Chart
-        st.markdown("### ATR")
-        fig_atr = go.Figure()
-
-        fig_atr.add_trace(go.Scatter(
-            x=df['date'],
-            y=df['atr'],
-            name='ATR',
-            line=dict(color='white', width=2),
-            fill='tozeroy',
-            fillcolor='rgba(255,255,255,0.1)'
-        ))
-
-        fig_atr.update_layout(
-            height=150,
-            plot_bgcolor='#0f172a',
-            paper_bgcolor='#1e293b',
-            font=dict(color='white', size=10),
-            margin=dict(l=40, r=40, t=20, b=20),
-            showlegend=False,
-            xaxis=dict(gridcolor='#1e293b', showgrid=True, color='#94a3b8'),
-            yaxis=dict(gridcolor='#1e293b', showgrid=True, color='#94a3b8')
-        )
-
-        st.plotly_chart(fig_atr, use_container_width=True, config={'displayModeBar': False})
-
-        # Signal Score display
-        st.markdown("### Signal Score")
-        st.markdown(f"<h2 style='color: white; text-align: right;'>{signal_score}</h2>", unsafe_allow_html=True)
-
-    with col2:
-        # MACD Chart
-        st.markdown("### MACD")
-        fig_macd = go.Figure()
-
-        # MACD histogram
-        colors = ['#10b981' if val >= 0 else '#ef4444' for val in df['macd_hist']]
-        fig_macd.add_trace(go.Bar(
-            x=df['date'],
-            y=df['macd_hist'],
-            name='Histogram',
-            marker_color=colors,
-            opacity=0.6
-        ))
-        # MACD and Signal lines
-        fig_macd.add_trace(go.Scatter(
-            x=df['date'],
-            y=df['macd'],
-            name='MACD',
-            line=dict(color='#06b6d4', width=2)
-        ))
-
-        fig_macd.add_trace(go.Scatter(
-            x=df['date'],
-            y=df['macd_signal'],
-            name='Signal',
-            line=dict(color='#f59e0b', width=2)
-        ))
-
-        fig_macd.update_layout(
-            height=180,
-            plot_bgcolor='#0f172a',
-            paper_bgcolor='#1e293b',
-            font=dict(color='white', size=10),
-            margin=dict(l=40, r=40, t=20, b=20),
-            showlegend=False,
-            xaxis=dict(gridcolor='#1e293b', showgrid=True, color='#94a3b8'),
-            yaxis=dict(gridcolor='#1e293b', showgrid=True, color='#94a3b8')
-        )
-
-        st.plotly_chart(fig_macd, use_container_width=True, config={'displayModeBar': False})
-
-        # MACD value display
         st.markdown(f"""
-        <div style='text-align: right; padding: 10px;'>
-            <span style='color: #94a3b8;'>M:0</span>
-            <span style='color: white; margin-left: 20px;'>{macd_value:.3f}</span>
+        <div style='text-align: center; padding: 20px; background: #1e293b; border-radius: 8px; margin-top: 10px;'>
+            <h2 style='color: {rsi_color}; margin: 0;'>{rsi_value:.2f}</h2>
+            <p style='color: #94a3b8; margin: 5px 0 0 0;'>{rsi_status}</p>
         </div>
         """, unsafe_allow_html=True)
 
-        # Bollinger Band Width
-        st.markdown("### Bollinger Band Width")
+    with col2:
+        # Signal Score display
+        st.markdown("### Signal Score")
 
-        # Determine sentiment
-        if bb_width > 1.5:
-            sentiment = "Bullish"
-            sentiment_color = "#10b981"
-            bar_width = min(bb_width / 2 * 100, 100)
+        # Determine color based on score
+        if signal_score >= 70:
+            score_color = "#10b981"
+            score_text = "Strong"
+        elif signal_score >= 40:
+            score_color = "#f59e0b"
+            score_text = "Moderate"
         else:
-            sentiment = "Neutral"
-            sentiment_color = "#94a3b8"
-            bar_width = 50
+            score_color = "#ef4444"
+            score_text = "Weak"
 
         st.markdown(f"""
-        <div style='padding: 20px; background: #1e293b; border-radius: 8px;'>
-            <h3 style='color: white; text-align: right;'>{bb_width:.2f}</h3>
-            <div style='background: rgba(255,255,255,0.1); height: 20px; border-radius: 10px; margin: 10px 0;'>
-                <div style='background: {sentiment_color}; width: {bar_width}%; height: 100%; border-radius: 10px;'></div>
-            </div>
-            <div style='display: flex; justify-content: space-between;'>
-                <span style='color: {sentiment_color};'>{sentiment}</span>
-                <span style='color: #94a3b8;'>Neutral</span>
-            </div>
+        <div style='text-align: center; padding: 30px; background: #1e293b; border-radius: 8px;'>
+            <h1 style='color: {score_color}; margin: 0; font-size: 72px;'>{signal_score:.0f}</h1>
+            <p style='color: #94a3b8; margin: 10px 0 0 0; font-size: 18px;'>{score_text}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Simple interpretation guide
+        st.markdown("""
+        <div style='margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px;'>
+            <p style='color: #94a3b8; font-size: 12px; margin: 5px 0;'>
+                <span style='color: #10b981;'>● 70-100:</span> Strong signal<br>
+                <span style='color: #f59e0b;'>● 40-69:</span> Moderate signal<br>
+                <span style='color: #ef4444;'>● 0-39:</span> Weak signal
+            </p>
         </div>
         """, unsafe_allow_html=True)
