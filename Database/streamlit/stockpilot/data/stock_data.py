@@ -84,29 +84,6 @@ class StockDataFetcher:
             'avg_volume': df['avg_volume'].iloc[0] if not df.empty else 0
         }
 
-    # @st.cache_data(ttl=300)
-    # def get_alerts(_self, ticker):
-    #     """simple alerts"""
-    #     metrics = _self.get_current_metrics(ticker)
-    #     alerts = []
-
-    #     if metrics:
-    #         # RSI alerts
-    #         if metrics.get('rsi', 50) > 70:
-    #             alerts.append({'message': 'RSI above 70', 'active': True})
-    #         elif metrics.get('rsi', 50) < 30:
-    #             alerts.append({'message': 'RSI below 30', 'active': True})
-
-    #         # Volume alerts
-    #         volume_data = _self.get_volume_data(ticker)
-    #         if volume_data['volume_data'][-1] > volume_data['avg_volume'] * 1.5:
-    #             alerts.append({'message': 'Volume spike', 'active': True})
-
-    #     # Default message if no alerts
-    #     if not alerts:
-    #         alerts.append({'message': 'No alerts', 'active': False})
-
-    #     return alerts
 
     @st.cache_data(ttl=300)
     def get_trend(_self, ticker):
@@ -130,6 +107,18 @@ class StockDataFetcher:
             return 'neutral'
 
         return result.iloc[0]['trend']
+
+    @st.cache_data(ttl=300)
+    def get_all_tickers(_self):
+        """Fetch all unique tickers from BigQuery."""
+        query = f"""
+        SELECT DISTINCT ticker
+        FROM `{_self.project_id}.{_self.dataset_id}.stocks_gold`
+        ORDER BY ticker
+        """
+        df = _self.client.query(query).to_dataframe()
+
+        return df["ticker"].tolist()
 
 
 def load_stock_data(ticker):

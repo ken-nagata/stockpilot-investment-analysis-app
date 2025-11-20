@@ -10,7 +10,7 @@ def render_sidebar(volume_data, avg_volume, trend):
         trend: Trend direction ('bullish', 'bearish', 'neutral')
     """
     # Volume Section
-    st.markdown("## Volume")
+    st.markdown("<h2 style='color: white;'>Volume</h2>", unsafe_allow_html=True)
 
     # Volume bar chart
     fig_volume = go.Figure()
@@ -58,7 +58,7 @@ def render_sidebar(volume_data, avg_volume, trend):
 
 
     # Trend Section
-    st.markdown("## Trend")
+    st.markdown("<h2 style='color: white;'>Trend</h2>", unsafe_allow_html=True)
 
     if trend == 'bullish':
         trend_color = "#10B981"

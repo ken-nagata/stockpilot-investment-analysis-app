@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  streamlit:
+    build:
+      context: .
+    restart: always
+    volumes:
+      - ./stockpilot:/app/stockpilot
+      - ./.streamlit:/app/.streamlit/
+    command: poetry run streamlit run stockpilot/app.py
+    ports:
+      - 8501:8501
+    stdin_open: true
+    tty: true
