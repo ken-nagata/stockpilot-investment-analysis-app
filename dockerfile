@@ -23,4 +23,4 @@ COPY pyproject.toml poetry.lock ./
 
 RUN pip3 install --upgrade --no-cache-dir pip \
     && pip3 install poetry \
-    && poetry install --only main
+    && poetry install --no-root

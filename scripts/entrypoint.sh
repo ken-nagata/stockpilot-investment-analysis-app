@@ -2,6 +2,12 @@
 
 airflow db migrate
 
-airflow users create -r Admin -u admin -p admin -e admin@example.com -f admin -l airflow
+airflow users create \
+  --username admin \
+  --password admin \
+  --firstname API \
+  --lastname Admin \
+  --role Admin \
+  --email admin@example.com || true
 
-airflow webserver
+airflow api-server
