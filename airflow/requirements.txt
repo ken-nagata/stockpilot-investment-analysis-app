@@ -1,0 +1,9 @@
+apache-airflow-providers-google
+google-cloud-bigquery
+google-cloud-storage
+gcsfs
+yfinance
+pandas
+pyarrow
+pendulum
+# add here dbt related packages
