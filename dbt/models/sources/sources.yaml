@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: stock_analytics_dev
+    loaded_at_field: ingested_at
+    tables:
+      - name: bronze_data
+        identifier: bronze_layer_table
+        description: "Raw equity data loaded from yfinance"
