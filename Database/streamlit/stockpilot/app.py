@@ -4,6 +4,7 @@ from data.stock_data import load_stock_data, StockDataFetcher
 from components.header import render_header
 from components.main_chart import render_main_chart
 from components.sidebar import render_sidebar
+from components.sidebarelerts import render_alerts
 
 
 st.set_page_config(
@@ -89,6 +90,8 @@ with col_refresh:
     if st.button("🔄 Refresh", use_container_width=True):
         st.cache_data.clear()
         st.rerun()
+
+
 # col_ticker, col_refresh = st.columns([4, 1])
 # with col_ticker:
 #     ticker = st.text_input("Enter Stock Ticker", value="AAPL", label_visibility="collapsed",
@@ -144,6 +147,9 @@ try:
             avg_volume=data['volume']['avg_volume'],
             trend=data['trend']
         )
+        st.markdown("---")
+        st.markdown("<h2 style='color: white;'>Trading Signals</h2>", unsafe_allow_html=True)
+        render_alerts(data['signals'])
 
     # Footer with last update time
     st.markdown("---")

@@ -35,14 +35,14 @@ class StockDataFetcher:
         FROM `{_self.project_id}.{_self.dataset_id}.stocks_gold`
         WHERE ticker = '{ticker}'
         AND date_time >= TIMESTAMP(DATE_SUB(CURRENT_DATE(), INTERVAL {days} DAY))
-        ORDER BY date_time ASC
+        ORDER BY date_time DESC
         LIMIT 60
         """
 
         df = _self.client.query(query).to_dataframe()
-        return df
+        return df.sort_values('date_time', ascending=True).reset_index(drop=True)
 
-    @st.cache_data(ttl=60)
+    @st.cache_data(ttl=350)
     def get_current_metrics(_self, ticker):
         """current price and metrics"""
         query = f"""
@@ -65,7 +65,7 @@ class StockDataFetcher:
         return result.iloc[0].to_dict()
 
     @st.cache_data(ttl=300)
-    def get_volume_data(_self, ticker, periods=20):
+    def get_volume_data(_self, ticker, periods=100):
         """volume data for chart"""
         query = f"""
         SELECT
@@ -120,6 +120,88 @@ class StockDataFetcher:
 
         return df["ticker"].tolist()
 
+    @st.cache_data(ttl=300)
+    def get_trading_signals(_self, ticker):
+        """Generate trading signals based on technical indicators"""
+        query = f"""
+        WITH recent_data AS (
+            SELECT
+                close,
+                volume,
+                sma_21,
+                sma_9,
+                date_time,
+                LAG(close, 1) OVER (ORDER BY date_time) as prev_close,
+                LAG(sma_9, 1) OVER (ORDER BY date_time) as prev_sma_9,
+                LAG(sma_21, 1) OVER (ORDER BY date_time) as prev_sma_21,
+                LAG(close, 5) OVER (ORDER BY date_time) as close_5_ago,
+                AVG(volume) OVER (ORDER BY date_time ROWS BETWEEN 20 PRECEDING AND CURRENT ROW) as avg_volume_20,
+                MAX(close) OVER (ORDER BY date_time ROWS BETWEEN 20 PRECEDING AND CURRENT ROW) as high_20,
+                MIN(close) OVER (ORDER BY date_time ROWS BETWEEN 20 PRECEDING AND CURRENT ROW) as low_20
+            FROM `{_self.project_id}.{_self.dataset_id}.stocks_gold`
+            WHERE ticker = '{ticker}'
+            ORDER BY date_time DESC
+            LIMIT 1
+        ),
+        latest_data AS (
+            SELECT
+                close,
+                volume,
+                sma_21,
+                sma_9,
+                prev_close,
+                prev_sma_9,
+                prev_sma_21,
+                close_5_ago,
+                avg_volume_20,
+                high_20,
+                low_20,
+                CASE
+                    WHEN volume > avg_volume_20 * 1.5 THEN 'high'
+                    WHEN volume < avg_volume_20 * 0.5 THEN 'low'
+                    ELSE 'normal'
+                END as volume_signal,
+                CASE
+                    WHEN close > sma_9 AND sma_9 > sma_21 THEN 'bullish'
+                    WHEN close < sma_9 AND sma_9 < sma_21 THEN 'bearish'
+                    ELSE 'neutral'
+                END as trend_signal,
+                CASE
+                    WHEN close >= high_20 * 0.98 THEN true
+                    ELSE false
+                END as near_resistance,
+                CASE
+                    WHEN close <= low_20 * 1.02 THEN true
+                    ELSE false
+                END as near_support
+            FROM recent_data
+        )
+        SELECT
+            close,
+            volume,
+            sma_21,
+            sma_9,
+            prev_close,
+            prev_sma_9,
+            prev_sma_21,
+            close_5_ago,
+            avg_volume_20,
+            high_20,
+            low_20,
+            volume_signal,
+            trend_signal,
+            near_resistance,
+            near_support
+        FROM latest_data
+        """
+
+        result = _self.client.query(query).to_dataframe()
+
+        if result.empty:
+            return None
+
+        return result.iloc[0].to_dict()
+
 
 def load_stock_data(ticker):
     """Load all data for dashboard"""
@@ -132,7 +214,8 @@ def load_stock_data(ticker):
         'historical': fetcher.get_stock_data(ticker),
         'current': fetcher.get_current_metrics(ticker),
         'volume': fetcher.get_volume_data(ticker),
-        'trend': fetcher.get_trend(ticker)
+        'trend': fetcher.get_trend(ticker),
+        'signals': fetcher.get_trading_signals(ticker)
     }
 
     return data
