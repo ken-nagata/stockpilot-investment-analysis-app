@@ -17,10 +17,18 @@ ENV DBT_VERSION=1.9.1
 WORKDIR $AIRFLOW_HOME
 
 COPY scripts scripts
-RUN chmod +x scripts/entrypoint.sh
 
 COPY pyproject.toml poetry.lock ./
+
+RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --upgrade --no-cache-dir pip \
     && pip3 install poetry \
     && poetry install --no-root
+
+# --- Project files (dags, dbt, etc.) ---
+COPY airflow/dags dags
+COPY dbt dbt
+COPY ingestion ingestion
+
+RUN chmod +x ./scripts/entrypoint.sh

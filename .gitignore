@@ -1,13 +1,70 @@
-
-target/
-dbt_packages/
-logs/
-keys/
-.venv/
+# PYTHON
 __pycache__/
-airflow/logs/
-airflow/plugins/
-.airflow/
+**/__pycache__
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# VIRTUAL ENVIRONMENTS
+.venv/
+venv/
+env/
+ENV/
+
+# POETRY
+.poetry/
+
+# ENV / SECRETS
 .env
+.env.*
 .envrc
+keys/
+*gcp_key.json
+
+# OS / EDITOR FILES
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AIRFLOW LOCAL STATE
+.airflow/
+airflow/logs/
+airflow/airflow.db
+airflow/airflow.cfg
+airflow/plugins/
+
+# DBT ARTIFACTS
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/tests/.user.yml
+dbt/.user.yml
+dbt/.gcp_keys/
+dbt/gcp_keys/
+profiles.yml
+dbt/profiles.yml
+
+# STREAMLIT + CACHE
+.streamlit/
+streamlit/.streamlit/
+
+# DOCKER BUILD ARTIFACTS
+docker-compose.override.yml
+
+# POSTGRES
 database/
+
+# IGNORE ALL KEY FILES
+**/gcp_keys/
+**/.gcp_keys/
+
+# ALLOW TEMPLATES
+!.env.sample
+!.envrc.sample

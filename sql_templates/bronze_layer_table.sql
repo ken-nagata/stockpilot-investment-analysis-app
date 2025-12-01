@@ -1,4 +1,4 @@
-CREATE TABLE `stockpilot-app-478511.stock_analytics_dev.bronze_layer_table` (
+CREATE TABLE `{PROJECT_ID}.{DATASET}.{BRONZE_TABLE}` (
   date_time   TIMESTAMP,
   ticker      STRING,
   name        STRING,

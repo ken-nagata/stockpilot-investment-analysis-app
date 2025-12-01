@@ -2,22 +2,24 @@ services:
   postgres:
     image: postgres:14
     environment:
-      - POSTGRES_DB=db
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-      - POSTGRES_USER=airflow
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
     volumes:
       - ./database/:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d db -U airflow || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER} || exit 1"]
       interval: 15s
+      timeout: 5s
       retries: 5
     ports:
-      - "5434:5432"
+      - "5433:5432"
     restart: always
 
   scheduler:
     build: .
-    command: bash -c "airflow db migrate &&airflow users create --username admin --password admin --firstname API --lastname Admin --role Admin --email admin@example.com && airflow scheduler"
+    working_dir: /app/airflow
+    command: poetry run airflow scheduler
     restart: on-failure
     healthcheck:
       test: ["CMD-SHELL", "poetry run airflow jobs check --job-type SchedulerJob --local || exit 1"]
@@ -28,17 +30,28 @@ services:
       - postgres
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:$POSTGRES_PASSWORD@postgres:5432/db
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - PYTHONPATH=/app/airflow
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - GCP_PROJECT_ID=${GCP_PROJECT_ID}
+      - GCP_DATASET=${GCP_DATASET}
+      - GCP_BRONZE_LAYER=${GCP_BRONZE_LAYER}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      - AIRFLOW__LOGGING__BASE_LOG_FOLDER=/app/airflow/logs
     volumes:
-      - ./dags:/app/airflow/dags
-      - ./data:/app/airflow/data
-      - ./logs:/app/airflow/logs
+      - ./airflow/dags:/app/airflow/dags
       - ./keys:/app/airflow/.gcp_keys
       - ./dbt:/app/airflow/dbt
+      - ./ingestion:/app/airflow/ingestion
+      - ./airflow/logs:/app/airflow/logs
+    ports:
+      - "8793:8793"
 
-  api-server:
+  webserver:
     build: .
+    working_dir: /app/airflow
     command: poetry run scripts/entrypoint.sh
     restart: on-failure
     depends_on:
@@ -46,16 +59,21 @@ services:
       - scheduler
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:$POSTGRES_PASSWORD@postgres:5432/db
-      - POSTGRES_DB=db
-      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
-      - POSTGRES_USER=airflow
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - PYTHONPATH=/app/airflow
+      - AIRFLOW__WEBSERVER__SECRET_KEY=${AIRFLOW_SECRET_KEY}
+      - AIRFLOW__LOGGING__BASE_LOG_FOLDER=/app/airflow/logs
+      - AIRFLOW_ADMIN_USERNAME=${AIRFLOW_ADMIN_USERNAME}
+      - AIRFLOW_ADMIN_PASSWORD=${AIRFLOW_ADMIN_PASSWORD}
+      - AIRFLOW_ADMIN_EMAIL=${AIRFLOW_ADMIN_EMAIL}
+      - AIRFLOW_ADMIN_FIRSTNAME=${AIRFLOW_ADMIN_FIRSTNAME}
+      - AIRFLOW_ADMIN_LASTNAME=${AIRFLOW_ADMIN_LASTNAME}
     volumes:
-      - ./dags:/app/airflow/dags
-      - ./data:/app/airflow/data
-      - ./logs:/app/airflow/logs
+      - ./airflow/dags:/app/airflow/dags
+      - ./ingestion:/app/airflow/ingestion
+      - ./airflow/logs:/app/airflow/logs
     ports:
-      - "8081:8080"
+      - "8080:8080"
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 30s

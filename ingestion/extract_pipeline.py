@@ -26,9 +26,7 @@ import gcsfs
 
 BUCKET_NAME = os.getenv("BUCKET_NAME")
 
-# ---------------------------------------------------------
 # 1. FETCH EQUITY DATA
-# ---------------------------------------------------------
 def fetch_equity(tickers, period_, interval_):
     frames = []
 
@@ -123,18 +121,13 @@ def fetch_equity(tickers, period_, interval_):
     return pd.concat(frames, ignore_index=True)
 
 
-# ---------------------------------------------------------
 # 2. GENERATE GCS PATH FOR EACH FILE
-# ---------------------------------------------------------
 def make_gcs_path(symbol: str, batch_ts: datetime) -> str:
     date_str = batch_ts.date().isoformat()                 # "2025-11-18"
     ts_str = batch_ts.strftime("%Y-%m-%dT%H-%M-%SZ")       # "2025-11-18T20-11-00Z"
     return f"raw/{date_str}/{symbol}_{ts_str}.parquet"
 
-# ---------------------------------------------------------
 # 3. WRITE TO PARQUET
-# ---------------------------------------------------------
-
 def write_parquet_to_gcs(df: pd.DataFrame, gcs_path: str):
     fs = gcsfs.GCSFileSystem()  # uses ADC credentials
     df = df.reset_index(drop=True)
@@ -147,9 +140,7 @@ def write_parquet_to_gcs(df: pd.DataFrame, gcs_path: str):
 
     return full_uri
 
-# ---------------------------------------------------------
 # 4. MAIN FUNCTION FOR AIRFLOW
-# ---------------------------------------------------------
 def run_ingestion(
     tickers,
     period_="1d",
@@ -184,10 +175,7 @@ def run_ingestion(
 
     return uris
 
-
-# ---------------------------------------------------------
 # 5. LOCAL TEST ENTRYPOINT
-# ---------------------------------------------------------
 if __name__ == "__main__":
     tickers = ["LEU"]
     run_ingestion(tickers=tickers, period_="1d", interval_="1m")

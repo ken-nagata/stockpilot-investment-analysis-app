@@ -6,16 +6,26 @@
 
 {% set eps = 1e-6 %}
 
-WITH base AS (
+WITH ranked AS (
+  SELECT
+    *,
+    row_number() over (partition by event_key order by ingested_at desc) as row_nb
+  FROM {{ ref('stocks_silver') }}
+),
+base_silver AS (
+  SELECT *
+  FROM ranked
+  WHERE row_nb = 1
+),
+base AS (
     SELECT
         *,
         CASE WHEN close < low - {{eps}} THEN low
         WHEN close > high + {{eps}} THEN high
         ELSE close
         END AS close_fixed
-    FROM {{ ref('stocks_silver') }}
+    FROM base_silver
 ),
-
 features AS (
     SELECT
         *

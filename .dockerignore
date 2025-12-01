@@ -1,0 +1,49 @@
+# OS / Editor
+.DS_Store
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Git
+.git
+.gitignore
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Env files
+.env
+.env.*
+!.env.sample
+!.envrc.sample
+
+# Credentials
+keys/
+*.pem
+
+# Airflow runtime folders
+airflow/logs/
+airflow/plugins/
+
+# Local Postgres data
+database/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# dbt generated
+dbt/target/
+dbt/logs/
+
+# Streamlit
+.streamlit/
+
+# SQL templates
+sql_templates/

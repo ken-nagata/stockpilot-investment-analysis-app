@@ -1,30 +1,16 @@
 from airflow import DAG
-from airflow.providers.standard.operators.python import PythonOperator
-from airflow.providers.standard.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from datetime import timedelta
 import os
 import pendulum
 import sys
 from pathlib import Path
-
-# PROJECT_ROOT = "/home/kayacan.berk93/code/ken-nagata/stockpilot-investment-analysis-app"
-# if PROJECT_ROOT not in sys.path:
-#     sys.path.insert(0, PROJECT_ROOT)
-
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-DBT_DIR = os.getenv("DBT_DIR")
-
 from ingestion.extract_pipeline import run_ingestion
 
 
-# -----------------------------------
 # CONFIG
-# -----------------------------------
 TICKERS = ['NVDA','AAPL','MSFT','GOOGL','META','TSLA','LLY',
            'UNH','WMT','INTC','PEP','GE','GEV','ORCL','DIS','LEU',
            'NFLX','CRM','JNJ','NVO','KO','AMZN','PG','V']
@@ -32,18 +18,17 @@ BUCKET = os.getenv("BUCKET_NAME")
 PROJECT = os.getenv("GCP_PROJECT_ID")
 DATASET = os.getenv("GCP_DATASET")
 BRONZE_TABLE = os.getenv("GCP_BRONZE_LAYER")
+DBT_DIR = os.getenv("DBT_DIR")
 
-
-# -----------------------------------
 # DAG DEFINITION
-# -----------------------------------
 default_args = {
     "depends_on_past": False,
     "retries": 1,
     "retry_delay": timedelta(minutes=2),
 }
 
-start = pendulum.datetime(2024, 1, 1, tz="UTC")
+start = pendulum.now("Europe/Berlin").subtract(minutes=10)
+# start = pendulum.datetime(2024, 1, 1, tz="UTC")
 
 
 with DAG(
@@ -70,10 +55,7 @@ with DAG(
         }
     )
 
-    # -----------------------------------
     # 2) Load Bronze (GCS -> BigQuery)
-    # -----------------------------------
-
     load_to_bronze_layer = GCSToBigQueryOperator(
         task_id="load_to_bronze_layer",
         bucket=BUCKET,
@@ -83,23 +65,17 @@ with DAG(
         write_disposition="WRITE_APPEND"  # 'WRITE_TRUNCATE' for daily batch
     )
 
-    # -----------------------------------
     # 3) DBT Run (Bronze -> Silver & Silver -> Gold)
-    # -----------------------------------
     dbt_run = BashOperator(
         task_id='dbt_run',
         bash_command='dbt run --project-dir $DBT_DIR'
     )
 
-    # -----------------------------------
     # 4) DBT Test (Bronze -> Silver & Silver -> Gold)
-    # -----------------------------------
     dbt_test = BashOperator(
     task_id='dbt_test',
     bash_command='dbt test --project-dir $DBT_DIR'
     )
 
-    # -----------------------------------
     # Dependency
-    # -----------------------------------
     extract_to_gcs >> load_to_bronze_layer >> dbt_run >> dbt_test
