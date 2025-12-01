@@ -7,7 +7,7 @@
 #   2) Normalizes + enriches metadata
 #   3) Writes 1 parquet file *per ticker per run*
 #   4) Uploads files to:
-#         gs://daily_stock_tickers/raw/<DATE>/<TICKER>_<TS>.parquet
+#         gs://BUCKET_NAME/raw/<DATE>/<TICKER>_<TS>.parquet
 
 
 import pandas as pd
