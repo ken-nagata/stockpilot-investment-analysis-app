@@ -9,8 +9,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               name: "date_not_in_future"
-              arguments:
-                expression: "<= current_date()"
+              expression: "<= current_date()"
       - name: ticker
         tests:
           - not_null
@@ -19,34 +18,29 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               name: "close_positive"
-              arguments:
-                expression: "> 0"
+              expression: "> 0"
       - name: high
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               name: "high_positive"
-              arguments:
-                expression: "> 0"
+              expression: "> 0"
       - name: low
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               name: "low_positive"
-              arguments:
-                expression: "> 0"
+              expression: "> 0"
       - name: adj_close
         tests:
           - dbt_utils.expression_is_true:
               name: "adj_close_positive"
-              arguments:
-                expression: ">0"
+              expression: ">0"
       - name: volume
         tests:
           - dbt_utils.expression_is_true:
               name: "volume_positive"
-              arguments:
-                expression: ">= 0"
+              expression: ">= 0"
       - name: event_key
         tests:
           - not_null
@@ -54,5 +48,4 @@ models:
     tests:
       - dbt_utils.expression_is_true:
           name: "ohlc_consistency"
-          arguments:
-            expression: "close >= low - 1e-6 and close <= high + 1e-6 and high >= low"
+          expression: "close >= low - 1e-6 and close <= high + 1e-6 and high >= low"

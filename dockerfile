@@ -31,4 +31,7 @@ COPY airflow/dags dags
 COPY dbt dbt
 COPY ingestion ingestion
 
+# Install dbt dependencies
+RUN poetry run dbt deps --project-dir dbt
+
 RUN chmod +x ./scripts/entrypoint.sh

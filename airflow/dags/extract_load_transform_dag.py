@@ -42,9 +42,7 @@ with DAG(
     tags=["stockpilot", "ingestion"]
 ) as dag:
     date = "{{ ds }}"
-    # -----------------------------------
     # 1) Extract -> Parquet -> GCS
-    # -----------------------------------
     extract_to_gcs = PythonOperator(
         task_id="extract_to_gcs",
         python_callable=run_ingestion,

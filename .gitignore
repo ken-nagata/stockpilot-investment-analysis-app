@@ -49,6 +49,8 @@ dbt/.gcp_keys/
 dbt/gcp_keys/
 profiles.yml
 dbt/profiles.yml
+logs/
+dbt/package-lock.yml
 
 # STREAMLIT + CACHE
 .streamlit/
