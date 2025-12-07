@@ -26,3 +26,6 @@ flowchart TB
     style DBT_GOLD fill:#FACC15,stroke:#EAB308,stroke-width:2px,color:#000
     style STREAMLIT fill:#FF4B4B,stroke:#E63946,stroke-width:2px,color:#fff
 ```
+
+
+<img width="1664" height="649" alt="image" src="https://github.com/user-attachments/assets/0c75090d-6feb-4724-838e-513c398aec69" />
