@@ -27,5 +27,8 @@ flowchart TB
     style STREAMLIT fill:#FF4B4B,stroke:#E63946,stroke-width:2px,color:#fff
 ```
 
+## Streamlit Visualization (MVP)
 
-<img width="1664" height="649" alt="image" src="https://github.com/user-attachments/assets/0c75090d-6feb-4724-838e-513c398aec69" />
+
+<img width="1657" height="642" alt="image" src="https://github.com/user-attachments/assets/166b3c2c-c9b0-4e02-9e55-5b7c526f14c1" />
+
