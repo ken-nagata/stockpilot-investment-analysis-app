@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit.components as st
 import plotly.graph_objects as go
 
 def render_sidebar(signal_score, volume_data, avg_volume, alerts, trend):

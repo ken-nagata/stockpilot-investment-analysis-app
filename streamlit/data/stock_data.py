@@ -1,7 +1,7 @@
 import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
-import streamlit as st
+import streamlit.components as st
 
 class StockDataFetcher:
     """fetcher from BigQuery"""

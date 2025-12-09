@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit.components as st
 import plotly.graph_objects as go
 
 def render_header(current_price, price_change, pct_change, signal_score):
