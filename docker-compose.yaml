@@ -90,5 +90,9 @@ services:
     command: poetry run streamlit run stockpilot/app.py
     ports:
       - 8501:8501
+    depends_on:
+      - postgres
+      - scheduler
+      - webserver
     stdin_open: true
     tty: true
